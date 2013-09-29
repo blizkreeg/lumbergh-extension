@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["https://mail.google.com/*"],
-      "css": ["lumbergh.css"],
+      "css": ["lumbergh.css", "font-awesome.min.css"],
       "js": ["jquery-1.10.2.min.js", "lumbergh.js", "login.js", "jquery.ba-hashchange.min.js"],
       "run_at": "document_end"
     }
@@ -39,7 +39,13 @@
     // "jquery.js",
     "jquery-1.10.2.min.js",
     "jquery-1.10.2.min.map",
-    "post.js"
+    "post.js",
+    "images/icon48.png",
+    "font/fontawesome-webfont.eot",
+    "font/fontawesome-webfont.svg",
+    "font/fontawesome-webfont.ttf",
+    "font/fontawesome-webfont.wof",
+    "font/FontAwesome.otf"
   ],
 
   "content_security_policy": "script-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'self'"

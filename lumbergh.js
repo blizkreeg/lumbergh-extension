@@ -6,6 +6,8 @@ METHOD_PROCESS = '?method=process'
 METHOD_STATUS = '?method=status'
 TRAIN_PROCESS = '?method=train'
 
+SESSION_CHECK_TIMEOUT = 60000
+
 var get_tasks_timeout_id = "undefined";
 var login_status_timeout_id = "undefined";
 var tab_id_timeout_id = "undefined";
@@ -18,10 +20,6 @@ var tab_id;
 
 function get_email_address() {
   email_address = $('span.gbps2:first').text();
-}
-
-function show_message_top(msg) {
-  $('#lumbergh_dash').text(msg);
 }
 
 /* NOT USED
@@ -53,13 +51,15 @@ function show_message_top(msg) {
 */
 
 function process_login_status(response) {
+  console.log("check login status");
   if(response != undefined && response.status != undefined) {
     if(response.status == "false") {
-      show_login_link();
+      console.log("...not logged in");
+      show_login_link(true);
       fire_login_link();
     } else {
-      console.log("is logged in");
-      // $('button#gbqfb').after('<div id="lumbergh_dash" style="position:absolute;float:left;background-color:#ff7400;text-align:center;margin-left:25px;padding:1px 3px;">Lumbergh</div>');
+      console.log("...is logged in");
+      show_login_link(false);
       ping_for_tasks();
     }
   } else {
@@ -72,11 +72,9 @@ function ping_for_login_status() {
     window.clearTimeout(login_status_timeout_id);
   }
 
-  console.log("pinging for login status");
   console.log(email_address);
   chrome.runtime.sendMessage({greeting: "gimmeloginstatus", email: email_address}, process_login_status);
-  console.log("pinging for login status again in 30s...");
-  login_status_timeout_id = window.setTimeout(ping_for_login_status, 10000);
+  login_status_timeout_id = window.setTimeout(ping_for_login_status, SESSION_CHECK_TIMEOUT);
 }
 
 function get_tasks(response) {
@@ -84,9 +82,6 @@ function get_tasks(response) {
     console.log("got tasks. painting the window now.");
     window.tasks = response.data;
     paint_tasks();
-    // show_message_top("");
-  } else {
-    // show_message_top("Your tasks are loading...");
   }
 }
 
@@ -151,7 +146,7 @@ $(document).ready(function (){
   ping_for_login_status();
   // ping_for_tab_id();
   $(window).hashchange(function(){
-    task_button_timeout_id = window.setTimeout(show_task_button_in_message, 3000);
+    task_button_timeout_id = window.setTimeout(show_task_button_in_message, 1000);
     ping_for_tasks();
     $messages_table = $('div.UI');
     $messages_table.css({"width": "80%", "float": "left"});
@@ -168,14 +163,35 @@ function add_lumbergh_dash() {
     console.log('didnt find button#gbqfb');
     upper_nav_timeout_id = window.setTimeout(add_lumbergh_dash, 10000);
   } else {
-    $('button#gbqfb').after('<div id="lumbergh_dash" style="width:200px;text-align:center;float:right;margin-left:25px;color:black;padding:3px 5px;text-decoration:none;"></div>');
+    $('button#gbqfb').after('<div id="lumbergh_dash"><img id="lumbergh_logo"><div class="message"></div></img><div id="lumbergh_menu"><i class="icon-sort-down icon-1x"></i></div><div class="box"><div id="lumbergh_login_link"></div></div></div>');
+    var img_url = chrome.extension.getURL("images/icon48.png");
+    document.getElementById("lumbergh_logo").src = img_url;
+
+    // UNCOMMENT TO ENABLE DROPDOWN
+
+    // $('#lumbergh_menu .icon-sort-down').on('click', function(e) {
+    //   $('#lumbergh_dash > .box').toggle();
+    // });
+
+    // $('#lumbergh_dash #lumbergh_logo').on('click', function(e) {
+    //   $('#lumbergh_dash > .box').toggle();
+    // });
   }
 }
 
-function show_login_link() {
-  if(!window.has_lumbergh_login_link) {
-    $('#lumbergh_dash').html('<a href="" id="lumbergh_login" style="background-color:#ff7400;color:white;text-decoration:none;padding:2px 3px;">Login to Lumbergh</a>');
-    window.has_lumbergh_login_link = true;
+function show_login_link(login) {
+  // if(!window.has_lumbergh_login_link) {
+  if(login) {
+    show_login("Signin to Lumbergh");
+    // window.has_lumbergh_login_link = true;
+  } else {
+    console.log(window.tasks);
+    if(window.tasks == null) {
+      show_message('Loading tasks...');
+    } else {
+      show_logout();
+    }
+    // window.has_lumbergh_login_link = true;
   }
 }
 
@@ -186,14 +202,39 @@ function show_task_button_in_message() {
 
   var $h1len = $('h1.ha');
   if($h1len.length == 0) {
-    task_button_timeout_id = window.setTimeout(show_task_button_in_message, 3000);
+    // task_button_timeout_id = window.setTimeout(show_task_button_in_message, 1000);
   } else {
     var task_msg = '';
-    task_msg = '<div id="addtask" style="margin-right:8px;float:left;background-color:#ff7400;color:white;text-decoration:none;padding:2px 3px;"><input type="checkbox" id="' + mid + '" value=""> Is this a task?' + '</div>';
+    var identified_as_task = 0;
+    if(window.tasks != null && window.tasks.length != 0) {
+      for(i = 0;i < window.tasks.length;i++) {
+        if(window.tasks[i].id == mid && (window.tasks[i].is_task == "True" || window.tasks[i].is_task == "true")) {
+          identified_as_task = 1;
+          break;
+        }
+      }
+    }
+    if(identified_as_task == 1) {
+      task_msg = '<div id="addtask"><i class="icon-flag-alt"></i> <div class="task">Marked as ToDo</div></div>';
+    } else {
+      task_msg = '<div id="addtask"><div class="task"><input type="checkbox" id="' + mid + '" value=""> Mark as ToDo' + '</div></div>';
+    }
     $('#addtask').remove();
     $('div.ade').prepend(task_msg);
     add_task_event();
   }
+}
+
+function show_message(msg) {
+  $('#lumbergh_dash > .message').html(msg);
+}
+
+function show_login(msg) {
+  $('#lumbergh_dash > .message').html('<a href="" id="lumbergh_login">' + msg + '</a>');
+}
+
+function show_logout() {
+  $('#lumbergh_login_link').html('<a href="" id="lumbergh_login"><i class="icon-off"></i> Signout of Lumbergh</a>');
 }
 
 function paint_tasks() {
@@ -201,6 +242,11 @@ function paint_tasks() {
     if(window.tasks == null || window.tasks.length == 0) {
       return;
     }
+
+    show_logout();
+    message = '<strong>' + window.tasks.length + '</strong>' + ' tasks';
+    show_message(message);
+
     // $messages_table = $('table.F');
     // $messages_table_first = $('table.F:first');
     var $main_div = $('div.UI');
@@ -235,9 +281,9 @@ function paint_tasks() {
           task_list += '<p style="width:100%;padding:2px 2px 2px 3px;' + style + '">';
           task_list += '<label class="checkbox inline"> <input type="checkbox" id="' +
                         window.tasks[i].id + '" value="">&nbsp; ' +
-                        '<small><a style="color:inherit;text-decoration:none;" href="' + document.URL + '/' + window.tasks[i].id +'" title="' + window.tasks[i].subject + '">' + window.tasks[i].subject.substring(0,35) + '..</a></small>' +
+                        '<small><a style="color:inherit;text-decoration:none;" href="' + document.URL + '/' + window.tasks[i].id +'" title="' + window.tasks[i].subject + '">' + window.tasks[i].subject.substring(0,30) + '..</a></small>' +
                         '</label>';
-          task_list += '<span style="float:right;margin-right:8px;"><small><a href="" id="' + window.tasks[i].id + '" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span>';
+          task_list += '<span style="float:right;margin-right:8px;"><small><a href="" id="' + window.tasks[i].id + '" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;"><i class="icon-remove"></i></a></small></span>';
           task_list += '</p>';
         }
         if(cnt == -1) {
@@ -289,7 +335,7 @@ function fire_login_link() {
       SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvEUg7kVFrl8yi4rrAY1LbPheX3peFBbustx5D0LM60etf02Mg/exec';
       METHOD_AUTH = '?method=auth';
 
-      $('body #lumbergh_login').on('click', function() {
+      $('#lumbergh_login').on('click', function() {
         window.open(SCRIPT_URL + METHOD_AUTH, $(this).attr('id'), 'width=640,height=480');
         window.focus();
       });
