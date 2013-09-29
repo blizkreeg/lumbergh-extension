@@ -1,7 +1,7 @@
 console.log("background script ready");
 
 var refresh_bg_page_timeout_id = "undefined";
-refresh_bg_page_timeout_id = window.setTimeout(refresh_bg_page, 5000);
+refresh_bg_page_timeout_id = window.setTimeout(refresh_bg_page, 50000);
 
 document.addEventListener('DOMContentLoaded', function() {
   // document.querySelector('#testRequest').addEventListener('click', testRequest);
