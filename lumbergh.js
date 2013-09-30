@@ -247,6 +247,8 @@ function paint_tasks() {
         }
       });
 
+      var pagination = new Pagination(0, window.tasks.length, 10, window.tasks);
+      applyPagination(pagination);
       add_nontask_event();
       add_onclick_event();
     });
