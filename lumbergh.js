@@ -243,6 +243,8 @@ function paint_tasks() {
       return;
     }
 
+    window.task_items = [];
+
     show_logout();
     message = '<strong>' + window.tasks.length + '</strong>' + ' tasks';
     show_message(message);
@@ -278,13 +280,16 @@ function paint_tasks() {
           } else {
             style = "background-color:#FFFFFF;"
           }
-          task_list += '<p style="width:100%;padding:2px 2px 2px 3px;' + style + '">';
-          task_list += '<label class="checkbox inline"> <input type="checkbox" id="' +
+          var task_item = '';
+          task_item += '<p style="width:100%;padding:2px 2px 2px 3px;' + style + '">';
+          task_item += '<label class="checkbox inline"> <input type="checkbox" id="' +
                         window.tasks[i].id + '" value="">&nbsp; ' +
                         '<small><a style="color:inherit;text-decoration:none;" href="' + document.URL + '/' + window.tasks[i].id +'" title="' + window.tasks[i].subject + '">' + window.tasks[i].subject.substring(0,30) + '..</a></small>' +
                         '</label>';
-          task_list += '<span style="float:right;margin-right:8px;"><small><a href="" id="' + window.tasks[i].id + '" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;"><i class="icon-remove"></i></a></small></span>';
-          task_list += '</p>';
+          task_item += '<span style="float:right;margin-right:8px;"><small><a href="" id="' + window.tasks[i].id + '" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;"><i class="icon-remove"></i></a></small></span>';
+          task_item += '</p>';
+          task_list += task_item;
+          window.task_items.push($(task_item)[0]);
         }
         if(cnt == -1) {
           return '<h4>You win. No tasks for you!</h4>';
@@ -293,8 +298,10 @@ function paint_tasks() {
         }
       });
 
-      var pagination = new Pagination(0, window.tasks.length, 10, window.tasks);
+      // TODO: should not keep re-instantiating pagination object; should move to global namespace
+      var pagination = new Pagination(0, window.task_items.length, 10, window.task_items);
       applyPagination(pagination);
+
       add_nontask_event();
       add_onclick_event();
     });

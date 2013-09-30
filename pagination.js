@@ -76,7 +76,7 @@ Pagination.prototype.pageHtml = function(index) {
   var results = '';
   var page_items = this.page(index).items;
   for (var i = 0; i < page_items.length; i++) {
-    results += page_items[i].outerHTML;
+    if(page_items[i]) results += page_items[i].outerHTML;
   }
   return '<div class="page">' + results + '</div>';
 };
