@@ -19,7 +19,7 @@
     {
       "matches": ["https://mail.google.com/*"],
       "css": ["lumbergh.css", "font-awesome.min.css"],
-      "js": ["jquery-1.10.2.min.js", "lumbergh.js", "login.js", "jquery.ba-hashchange.min.js"],
+      "js": ["jquery-1.10.2.min.js", "pagination.js", "lumbergh.js", "login.js", "jquery.ba-hashchange.min.js"],
       "run_at": "document_end"
     }
   ],
