@@ -1,0 +1,198 @@
+<html>
+  <head>
+    <script src="./jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">
+      (function($) {
+        $(function() {
+          var tasks = $('#todo .table p');
+          var num_tasks = tasks.length;
+          var per_page = 10;
+          var num_pages = Math.ceil(num_tasks/per_page);
+          var current_page = 3;
+          var start_num = current_page * per_page + 1;
+          var end_num = start_num + 10 - 1;
+          // console.log(start_num + '-' + end_num + ' of ' + num_tasks + ' tasks');
+
+          window.Page = function Page(items) {
+            this.items = typeof items !== 'undefined' ? items : [];
+          };
+
+          Page.prototype.html = function() {
+            var results = '';
+            for (var i = 0; i < this.items.length; i++) {
+              results += this.items[i];
+            }
+            return results;
+          };
+
+          window.Pagination = function Pagination(current_page, num_tasks, per_page, items) {
+            this.current_page = current_page;
+            this.num_tasks = num_tasks;
+            this.per_page = per_page;
+            this.items = items;
+          };
+
+          Pagination.prototype.startNum = function() {
+            return this.current_page * this.per_page + 1;
+          };
+
+          Pagination.prototype.endNum = function() {
+            return this.startNum() + 10 - 1;
+          };
+
+          Pagination.prototype.numPages = function() {
+            return Math.ceil(this.num_tasks/this.per_page);
+          }
+
+          Pagination.prototype.nav = function() {
+            return $('<div>', {
+              class: 'pagination-nav',
+              html: this.startNum() + '-' + this.endNum() + ' of ' + this.num_tasks + ' tasks' + ' ' + this.navLeft() + ' ' + this.navRight()
+            })[0].outerHTML;
+          };
+
+          Pagination.prototype.navArrow = function(dir, active) {
+            active = typeof active !== 'undefined' ? active : true;
+            var is_inactive = active == true ? '' : 'inactive';
+            var elClass = 'arrow-' + dir + ' ' + is_inactive;
+            var arrow = $('<span>', {
+              class: elClass
+            });
+            return arrow[0].outerHTML;
+          };
+
+          Pagination.prototype.refreshPage = function(page_num) {
+            
+          };
+
+          Pagination.prototype.navLeft = function() {
+            return this.navArrow('left', false);
+          };
+
+          Pagination.prototype.navRight = function() {
+            return this.navArrow('right');
+          };
+
+          Pagination.prototype.pages = function() {
+            var results = [];
+
+            for(var i = 0; i < this.numPages(); i++) { // page
+              var page = new Page();
+              var start_page = i * this.per_page;
+              var end_page = start_page + this.per_page;
+
+              for (var j = start_page; j < end_page; j++) { // items per page
+                page.items.push(this.items[j]);
+              }
+              results.push(page);
+            }
+            return results;
+          };
+
+          Pagination.prototype.pageHtml = function(index) {
+            var results = '';
+            var page_items = this.page(index).items;
+            for (var i = 0; i < page_items.length; i++) {
+              results += page_items[i].outerHTML;
+            }
+            return '<div class="page">' + results + '</div>';
+          };
+
+          Pagination.prototype.page = function(index) {
+            index = typeof index !== 'undefined' ? index : this.current_page;
+            return this.pages()[index];
+          };
+
+          var pagination = new Pagination(current_page, num_tasks, per_page, tasks);
+
+          function applyPagination() {
+            // insert the pagination nav
+            if ($('#todo .pagination-nav').length > 0) {
+              $('#todo .pagination-nav').replaceWith(paginationNav());
+            } else {
+              $('#todo .table').before(paginationNav());
+            }
+            // set the page
+            $('#todo .table').html(pagination.pageHtml());
+            addNavHandlers(pagination);
+          }
+
+          function paginationNav() {
+            // console.log($(pagination.page(0).items[0])[0].outerHTML);
+            return pagination.nav();
+          }
+
+          function addNavHandlers(pagination) {
+            // TODO handlers should be added as part of the Pagination class object
+            // here to attach to elements after page loads
+            $('.arrow-left').click(function() {
+              console.log('blah');
+              if (pagination.current_page != 0) {
+                pagination.current_page -= 1;
+              }
+              // refresh the page
+              applyPagination();
+              console.log(pagination.current_page);
+            });
+
+            $('.arrow-right').click(function() {
+              console.log('sldkfj');
+              if (pagination.current_page < pagination.numPages() - 1) {
+                pagination.current_page += 1;
+              }
+              applyPagination();
+              console.log(pagination.current_page);
+            });
+          }
+
+          applyPagination();
+        });
+      })(jQuery);
+    </script>
+    <style type="text/css">
+      .arrow-left, .arrow-right {
+        border-style: dashed;
+        border-color: transparent;
+        border-width: 0.53em;
+        display: -moz-inline-box;
+        display: inline-block;
+        font-size: 15px;
+        height: 0;
+        line-height: 0;
+        position: relative;
+        vertical-align: middle;
+        width: 0;
+      }
+      .arrow-left:hover, .arrow-right:hover {
+        opacity: 0.5;
+      }
+      .inactive {
+        opacity: 0.5;
+      }
+      .arrow-left {
+        border-right-width: 1em;
+        border-right-style: solid;
+        border-right-color: #666;
+        right: 0.25em;
+      }
+      .arrow-right {
+        border-left-width: 1em;
+        border-left-style: solid;
+        border-left-color: #666;
+        left: 0.25em;
+      }
+    </style>
+  </head>
+  <body>
+<div id="todo">
+  <h3>
+    <br>My Tasks<br>
+    <span style="color:#363636;font-size:0.7em;font-weight:normal;">☑ = task completed</span><br>
+    <span style="color:#363636;font-size:0.7em;font-weight:normal;">x&nbsp; = not a task</span>
+  </h3>
+  <!-- <table class="table table-striped"> -->
+  <div class="table">
+  <p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1416ae2475de56fa" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1416ae2475de56fa" title="Great Magento Certified Developer Opportunity in Foster City, CA">Great Magento Certified Developer O..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1416ae2475de56fa" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1416792303aae524" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1416792303aae524" title="anwnguyen, 9 music suggestions for you.">anwnguyen, 9 music suggestions for ..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1416792303aae524" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="14167165c58beada" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14167165c58beada" title="URGENT junit Maven developer Major medical firm CA">URGENT junit Maven developer Major ..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14167165c58beada" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="14167148eb665418" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14167148eb665418" title="URGENT Maven Junit developer for major medical firm in CA">URGENT Maven Junit developer for ma..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14167148eb665418" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="14166f4d9f4764e5" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14166f4d9f4764e5" title="Re: Reviving Lumbergh">Re: Reviving Lumbergh..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14166f4d9f4764e5" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="141635ffc45f83d3" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/141635ffc45f83d3" title="Tech in Asia Daily">Tech in Asia Daily..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="141635ffc45f83d3" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1415ffd6dd33ab28" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415ffd6dd33ab28" title="CrunchBase Daily: 3D Robotics, TradeHero, Good Eggs, Shopular, BetterCloud, JumpCam -&nbsp;September 27, 2013">CrunchBase Daily: 3D Robotics, Trad..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415ffd6dd33ab28" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1415e3a9ccc35f84" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415e3a9ccc35f84" title="Tech in Asia Daily">Tech in Asia Daily..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415e3a9ccc35f84" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1415cdfa48465c11" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415cdfa48465c11" title="Great Senior Ruby Engineer Opportunity in San Mateo, CA">Great Senior Ruby Engineer Opportun..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415cdfa48465c11" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1415c92c7aa0a65f" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415c92c7aa0a65f" title="Upcoming events we picked just for you">Upcoming events we picked just for ..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415c92c7aa0a65f" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1415c1f4a3312683" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415c1f4a3312683" title="Programming Languages | Survey Information">Programming Languages | Survey Info..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415c1f4a3312683" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1415c0dc87e51e1e" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415c0dc87e51e1e" title="Programming Languages Course Website is Now Open">Programming Languages Course Websit..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415c0dc87e51e1e" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1415bddbc95be7fe" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1415bddbc95be7fe" title="Programmers Weekly Newsletter - Thursday, September 26, 2013">Programmers Weekly Newsletter - Thu..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1415bddbc95be7fe" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c80f0051fdf40" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c80f0051fdf40" title="Hi Anthony Nguyen, learn what's new at Coursera this month!">Hi Anthony Nguyen, learn what's new..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c80f0051fdf40" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c7f43083d6f5c" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c7f43083d6f5c" title="Anthony Nguyen, See it Live: Tickets on Sale &amp; Special Offers This Week">Anthony Nguyen, See it Live: Ticket..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c7f43083d6f5c" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c6baf26761757" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c6baf26761757" title="Labor Day Update">Labor Day Update..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c6baf26761757" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c671b744617f4" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c671b744617f4" title="Following up on my previous email">Following up on my previous email..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c671b744617f4" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c578a0efd2df5" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c578a0efd2df5" title="CrunchBase Daily:&nbsp;Martini Media, Belly, Speakaboos, FeeX, Ubimo &nbsp;August 28, 2013">CrunchBase Daily:&nbsp;Martini Media, Be..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c578a0efd2df5" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c56b046fb8485" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c56b046fb8485" title="Ruby Engineer Opportunity ($80K-$120K) CALL ME!">Ruby Engineer Opportunity ($80K-$12..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c56b046fb8485" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c5546ac8db642" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c5546ac8db642" title="Weekend Trip: Sequoia National Park">Weekend Trip: Sequoia National Park..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c5546ac8db642" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c54eaf4eb6ade" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c54eaf4eb6ade" title="Are you interested in a DevOps Software Engineer Job?">Are you interested in a DevOps Soft..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c54eaf4eb6ade" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c3bd4111612d3" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c3bd4111612d3" title="Tech in Asia Daily">Tech in Asia Daily..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c3bd4111612d3" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c2ad685fe09bd" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c2ad685fe09bd" title="DailyJS: Do You Use the jQuery Plugin Site?">DailyJS: Do You Use the jQuery Plug..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c2ad685fe09bd" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c1f5ed9236534" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c1f5ed9236534" title="Programming Languages | Announcement">Programming Languages | Announcemen..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c1f5ed9236534" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c1826eb5458e4" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c1826eb5458e4" title="News and Calendar:  CrunchBase Partners with ILVenture to Expand Coverage in Israel">News and Calendar:  CrunchBase Part..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c1826eb5458e4" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c15064bd9c3db" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c15064bd9c3db" title="Stack Overflow Weekly Newsletter - Tuesday, August 27, 2013">Stack Overflow Weekly Newsletter - ..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c15064bd9c3db" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c0a9487b62c2a" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c0a9487b62c2a" title="This Week: Crafting a Brand Identity, Startup Viral Growth, Typography 101, and Video Editing">This Week: Crafting a Brand Identit..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c0a9487b62c2a" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140c07ab3777f17c" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c07ab3777f17c" title="Are you interested in a Ruby on Rails Developer Job in San Francisco, CA?">Are you interested in a Ruby on Rai..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c07ab3777f17c" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140c0543768cb429" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140c0543768cb429" title="CrunchBase Daily:&nbsp;FIlmtrack,&nbsp;Camera360, Eruditor, WaterSmart Software, Doggyloot,&nbsp;August 27, 2013">CrunchBase Daily:&nbsp;FIlmtrack,&nbsp;Camera..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140c0543768cb429" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140be963279412b9" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140be963279412b9" title="Tech in Asia Daily">Tech in Asia Daily..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140be963279412b9" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1408e51a93f994b0" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408e51a93f994b0" title="Your Weekly Financial Summary from Mint.com - 08/16/2013">Your Weekly Financial Summary from ..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408e51a93f994b0" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1408e0b3ea86c88d" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408e0b3ea86c88d" title="[Backyard Bonfire] Party starts at 6! See y'all tonight.">[Backyard Bonfire] Party starts at ..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408e0b3ea86c88d" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1408decacb2f4b2c" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408decacb2f4b2c" title="New position for a Rails Engineer Job in Palo Alto, CA now open">New position for a Rails Engineer J..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408decacb2f4b2c" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1408d90e7c99ea27" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408d90e7c99ea27" title="[GitHub] Payment Receipt">[GitHub] Payment Receipt..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408d90e7c99ea27" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1408ad70d4292109" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408ad70d4292109" title="Scheduled Downtime on August 17th">Scheduled Downtime on August 17th..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408ad70d4292109" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="14087e27f891f01a" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14087e27f891f01a" title="Are you interested in a Ruby on Rails Developer Job in Daly City, CA?">Are you interested in a Ruby on Rai..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14087e27f891f01a" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140879d324bb500a" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140879d324bb500a" title="CrunchBase Daily: Restorando, InteraXon, Punchh, 4th Aspect, Kiip - August 16, 2013">CrunchBase Daily: Restorando, Inter..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140879d324bb500a" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1408772fbc080746" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408772fbc080746" title="Creative Programming for Digital Media &amp; Mobile Apps: Feedback Survey">Creative Programming for Digital Me..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408772fbc080746" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140872f082dc8cf0" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140872f082dc8cf0" title="PG&amp;E Recurring Payment Scheduled">PG&amp;E Recurring Payment Scheduled..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140872f082dc8cf0" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="14086efda6ced15a" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14086efda6ced15a" title="Your PG&amp;E Energy Statement is Ready to View">Your PG&amp;E Energy Statement is Ready..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14086efda6ced15a" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="14085f02adbceca8" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14085f02adbceca8" title="Tech in Asia Daily">Tech in Asia Daily..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14085f02adbceca8" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="14083e405c3d7693" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14083e405c3d7693" title="Announcing the Ink mobile framework">Announcing the Ink mobile framework..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14083e405c3d7693" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="140837062b73fe7d" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140837062b73fe7d" title="Programmers Weekly Newsletter - Thursday, August 15, 2013">Programmers Weekly Newsletter - Thu..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140837062b73fe7d" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="140835396e91a551" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/140835396e91a551" title="Track Tasks &amp; Time in Asana">Track Tasks &amp; Time in Asana..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="140835396e91a551" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1408347aa55fb67e" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408347aa55fb67e" title="Teaching on Skillshare Just Got Easier">Teaching on Skillshare Just Got Eas..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408347aa55fb67e" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="1408313b60648244" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408313b60648244" title="LinkedIn Network Updates, 8/15/2013">LinkedIn Network Updates, 8/15/2013..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408313b60648244" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="14082fd48222a0da" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14082fd48222a0da" title="What would you split?">What would you split?..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14082fd48222a0da" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="14082b4075218de2" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14082b4075218de2" title="Top posts this week on Google+">Top posts this week on Google+..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14082b4075218de2" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#F3F3F3;"><label class="checkbox inline"> <input type="checkbox" id="1408286a05b7a596" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/1408286a05b7a596" title="CrunchBase Daily:&nbsp;BlueApronMeals, Tapastic, ThirdLove, InstaEDU, App.Net, Swiftype&nbsp;&nbsp;- August 15, 2013">CrunchBase Daily:&nbsp;BlueApronMeals, T..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="1408286a05b7a596" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p><p style="width:100%;padding:2px 2px 2px 3px;background-color:#FFFFFF;"><label class="checkbox inline"> <input type="checkbox" id="14080cbd08a5329e" value="">&nbsp; <small><a style="color:inherit;text-decoration:none;" href="https://mail.google.com/mail/u/0/#imp/14080cbd08a5329e" title="Tech in Asia Daily">Tech in Asia Daily..</a></small></label><span style="float:right;margin-right:8px;"><small><a href="" id="14080cbd08a5329e" class="not_task" title="not a task" style="padding:2px 2px;color:black;text-decoration:none;">x</a></small></span></p>
+  </div>
+  </body>
+</html>
