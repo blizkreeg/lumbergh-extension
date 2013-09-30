@@ -47,11 +47,13 @@ Pagination.prototype.navArrow = function(dir, active) {
 };
 
 Pagination.prototype.navLeft = function() {
-  return this.navArrow('left', false);
+  var active = this.current_page == 0 ? false : true;
+  return this.navArrow('left', active);
 };
 
 Pagination.prototype.navRight = function() {
-  return this.navArrow('right');
+  var active = (this.current_page == this.numPages() - 1) ? false: true;
+  return this.navArrow('right', active);
 };
 
 Pagination.prototype.pages = function() {
@@ -104,21 +106,16 @@ function addNavHandlers(pagination) {
   // TODO handlers should be added as part of the Pagination class object
   // here to attach to elements after page loads
   $('.arrow-left').click(function() {
-    console.log('blah');
     if (pagination.current_page != 0) {
       pagination.current_page -= 1;
+      applyPagination(pagination); // refresh page
     }
-    // refresh the page
-    applyPagination(pagination);
-    console.log(pagination.current_page);
   });
 
   $('.arrow-right').click(function() {
-    console.log('sldkfj');
     if (pagination.current_page < pagination.numPages() - 1) {
       pagination.current_page += 1;
+      applyPagination(pagination); // refresh page
     }
-    applyPagination(pagination);
-    console.log(pagination.current_page);
   });
 }
