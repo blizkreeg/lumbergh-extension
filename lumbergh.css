@@ -12,3 +12,79 @@ p {
   display: inline-block;
   clear: both;
 }
+
+#lumbergh_dash {
+  width: 200px;
+  height: 40px;
+  text-align: center;
+  float: right;
+  margin-left: 50px;
+  color: #303030;
+  padding: 0px 5px;
+  text-decoration: none;
+  font-family: "OpenSans", sans-serif;
+  font-size: 13px;
+  position: relative;
+}
+
+#lumbergh_dash > .message {
+  float: left;
+  margin-left: 5px;
+}
+
+#lumbergh_menu {
+  float: left;
+  margin-left: 6px;
+  display: none;
+}
+
+#lumbergh_dash > .box {
+  position: absolute;
+  display: none;
+  top: 51px;
+  background: white;
+  border: 1px solid gainsboro;
+  left: 5px;
+  width: 160px;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
+}
+
+#lumbergh_logo {
+  width: 30px;
+  height: 30px;
+  float: left;
+  /*background-image: url('chrome-extension://__MSG_@@extension_id__/images/icon48.png');*/
+}
+
+#lumbergh_login_link {
+  float: left;
+  width: 156px;
+  text-align: left;
+  background-color: #f4f4f4;
+  margin: 0px;
+  padding: 2px 0px 2px 8px;
+  border-bottom: 1px solid gainsboro;
+  box-shadow: 0px 1px 0px rgba(0,0,0,0.1);
+}
+
+a#lumbergh_login {
+  height: 40px;
+  color: #2ba6cb !important;
+  text-decoration: none !important;
+}
+
+#addtask {
+  margin-right: 8px;
+  float: left;
+  text-decoration: none;
+  padding: 6px 0px;
+  height: 24px;
+
+}
+
+#addtask .task {
+  background-color: #ff7400;
+  color: white;
+  display: inline;
+  padding: 0px 6px;
+}
