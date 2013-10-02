@@ -7,6 +7,7 @@ METHOD_STATUS = '?method=status'
 TRAIN_PROCESS = '?method=train'
 
 SESSION_CHECK_TIMEOUT = 60000
+PING_TASKS_TIMEOUT = 180000
 
 var get_tasks_timeout_id = "undefined";
 var login_status_timeout_id = "undefined";
@@ -63,7 +64,7 @@ function process_login_status(response) {
       ping_for_tasks();
     }
   } else {
-
+    console.log(response);
   }
 }
 
@@ -93,7 +94,7 @@ function ping_for_tasks() {
   console.log("asking for tasks");
   chrome.runtime.sendMessage({greeting: "gimmetasks"}, get_tasks);
   console.log("pinging for tasks again in 90s...");
-  get_tasks_timeout_id = window.setTimeout(ping_for_tasks, 5000);
+  get_tasks_timeout_id = window.setTimeout(ping_for_tasks, PING_TASKS_TIMEOUT);
 }
 
 function add_task_event() {
@@ -246,8 +247,6 @@ function paint_tasks() {
     window.task_items = [];
 
     show_logout();
-    message = '<strong>' + window.tasks.length + '</strong>' + ' tasks';
-    show_message(message);
 
     // $messages_table = $('table.F');
     // $messages_table_first = $('table.F:first');
@@ -292,8 +291,15 @@ function paint_tasks() {
           window.task_items.push($(task_item)[0]);
         }
         if(cnt == -1) {
+          message = '<strong>0</strong>' + ' tasks';
+          show_message(message);
+
           return '<h4>You win. No tasks for you!</h4>';
         } else {
+          console.log(cnt);
+          message = '<strong>' + (cnt+1) + '</strong>' + ' tasks';
+          show_message(message);
+
           return task_list;
         }
       });

@@ -39,8 +39,8 @@ Pagination.prototype.nav = function() {
 Pagination.prototype.navArrow = function(dir, active) {
   active = typeof active !== 'undefined' ? active : true;
   var is_inactive = active == true ? '' : 'inactive';
-  var elClass = 'arrow-' + dir + ' ' + is_inactive;
-  var arrow = $('<span>', {
+  var elClass = 'lumbergh-paginate icon-1x icon-caret-' + dir + ' ' + is_inactive;
+  var arrow = $('<i>', {
     class: elClass
   });
   return arrow[0].outerHTML;
@@ -105,14 +105,14 @@ function paginationNav(pagination) {
 function addNavHandlers(pagination) {
   // TODO handlers should be added as part of the Pagination class object
   // here to attach to elements after page loads
-  $('.arrow-left').click(function() {
+  $('.icon-caret-left').click(function() {
     if (pagination.current_page != 0) {
       pagination.current_page -= 1;
       applyPagination(pagination); // refresh page
     }
   });
 
-  $('.arrow-right').click(function() {
+  $('.icon-caret-right').click(function() {
     if (pagination.current_page < pagination.numPages() - 1) {
       pagination.current_page += 1;
       applyPagination(pagination); // refresh page

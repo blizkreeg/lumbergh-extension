@@ -89,26 +89,32 @@ a#lumbergh_login {
   padding: 0px 6px;
 }
 
-/* Pagination styles */
-.arrow-left, .arrow-right {
-  border-style: dashed;
-  border-color: transparent;
-  border-width: 0.53em;
-  display: -moz-inline-box;
-  display: inline-block;
-  font-size: 15px;
-  height: 0;
-  line-height: 0;
-  position: relative;
-  vertical-align: middle;
-  width: 0;
+.lumbergh-paginate {
+  color: #333333;
 }
-.arrow-left:hover, .arrow-right:hover {
-  opacity: 0.5;
+
+.lumbergh-paginate:hover {
+  color: #000000;
+  background-color: #e0e0e0;
 }
+
 .inactive {
   opacity: 0.5;
 }
+
+.pagination-nav {
+  clear: both;
+  margin-bottom: 8px;
+  font-family: "OpenSans", sans-serif;
+  font-size: 13px;
+}
+
+.lumbergh-paginate {
+  background-color: #ededed;
+  border:1px solid #f0f0f0;
+  padding: 1px 10px;
+}
+
 .arrow-left {
   border-right-width: 1em;
   border-right-style: solid;
